@@ -163,6 +163,10 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--ink);outline-of
 .done-all h2{font-family:var(--display);font-weight:800;font-size:110px;line-height:1;margin:0;letter-spacing:-.02em}
 .done-all p{font-size:32px;margin:0;color:#c9d4e2}
 .done-all .btn{background:transparent;color:#fff;border-color:#fff;font-size:24px}
+.askbox{width:720px}
+.askbox h3{font-size:36px;margin-bottom:10px}
+.askbox .foot{border-top:0;justify-content:flex-end;margin-top:20px}
+.clue{min-height:0}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -197,7 +201,7 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--ink);outline-of
         <span class="len" id="cLen">6 letters</span>
         <p class="clue" id="cClue"></p>
         <form class="answer" id="ansForm" autocomplete="off">
-          <input id="ansInput" aria-label="Your answer" spellcheck="false" autocapitalize="characters">
+          <input id="ansInput" aria-label="Your answer" spellcheck="false" autocapitalize="characters" autocomplete="off" autocorrect="off" enterkeyhint="done">
           <button class="btn solid" type="submit">Check</button>
         </form>
         <div class="msg" id="msg"></div>
@@ -220,6 +224,13 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--ink);outline-of
     <h2>Crossword complete</h2>
     <p>All 23 words solved. Well done, everyone!</p>
     <button class="btn" id="doneBack">Back to the numbers</button>
+  </div>
+
+  <div class="veil" id="ask" role="alertdialog" aria-modal="true" aria-labelledby="askText">
+    <div class="modal askbox">
+      <h3 id="askText"></h3>
+      <div class="foot"><button class="btn" id="askNo">Cancel</button><button class="btn red" id="askYes">OK</button></div>
+    </div>
   </div>
 
   <div class="veil" id="veil" role="dialog" aria-modal="true" aria-labelledby="mTitle">
@@ -361,7 +372,8 @@ function openWord(w){
   renderUsed();
   renderGrid();
   scrollToWord();
-  if(!done) inp.focus();
+  if(!done && !TOUCH) inp.focus();
+  fitClue();
 }
 function scrollToWord(){
   const el=$("grid").querySelector(".cell.sel"); if(!el) return;
@@ -398,8 +410,8 @@ function markSolved(w,text){
   renderPicker();
 }
 $("backBtn").onclick=()=>{cur=null;$("playView").hidden=true;$("pickerView").hidden=false;renderPicker();};
-$("revealBtn").onclick=()=>{ if(cur && confirm("Show the answer for this word?")) markSolved(cur,"Answer: "+cur.a); };
-$("resetAll").onclick=()=>{ if(confirm("Clear all progress and start again?")){state={solved:{},peek:{},hints:{}};save();$("backBtn").onclick();} };
+$("revealBtn").onclick=()=>{ if(cur) ask("Show the answer for this word?","Show answer",()=>markSolved(cur,"Answer: "+cur.a)); };
+$("resetAll").onclick=()=>ask("Clear all progress and start again?","Start over",()=>{state={solved:{},peek:{},hints:{}};save();$("backBtn").onclick();});
 
 /* ============ HINTS / MINI GAMES ============ */
 const GAMES = {
@@ -442,9 +454,10 @@ $("hintBtn").onclick=()=>openHint();
 $("mOther").onclick=()=>{document.removeEventListener("keydown",wordleKeys);openHint(lastGame);};
 $("mClose").onclick=closeHint;
 $("veil").addEventListener("click",e=>{if(e.target===$("veil"))closeHint();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("veil").classList.contains("open"))closeHint();});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return; if($("ask").classList.contains("open"))$("ask").classList.remove("open"); else if($("veil").classList.contains("open"))closeHint();});
 
 function gameWon(box,w){
+  box.querySelectorAll(".keys,.legend").forEach(e=>e.remove());
   const d=document.createElement("div"); d.className="win";
   d.innerHTML=`Correct! The word is now in the crossword.<b>${w.a}</b>`;
   box.appendChild(d);
@@ -521,7 +534,7 @@ const RUN = {
       const btn=K.querySelector(`[data-ch="${ch}"]`); btn.disabled=true;
       if(w.a.includes(ch)) btn.classList.add("hit"); else {btn.classList.add("no"); wrong++;}
       if([...w.a].every(c=>guessed.has(c))){ over=true; draw(); gameWon(box,w); return; }
-      if(wrong>=MAX){ over=true; draw(true); st.className="status bad"; st.textContent=`Out of guesses! The word was ${w.a}. Now type it into the answer box.`; return; }
+      if(wrong>=MAX){ over=true; draw(true); st.className="status bad"; st.textContent=`Out of guesses! The word was ${w.a}. Now type it into the answer box.`; K.remove(); return; }
       st.textContent=`Wrong guesses left: ${MAX-wrong}`; st.className="status";
       draw();
     }
@@ -590,7 +603,7 @@ const RUN = {
         [...cur].forEach((ch,i)=>{ const rank={g:3,y:2,x:1}; if(!keyState[ch]||rank[s[i]]>rank[keyState[ch]]) keyState[ch]=s[i]; });
         if(cur===w.a){ over=true; cur=""; draw(); st.textContent=""; gameWon(box,w); return; }
         cur="";
-        if(rows.length>=MAX){ over=true; draw(); st.className="status bad"; st.textContent=`Out of guesses! The word was ${w.a}.`; return; }
+        if(rows.length>=MAX){ over=true; draw(); st.className="status bad"; st.textContent=`Out of guesses! The word was ${w.a}.`; K.remove(); return; }
         st.className="status"; st.textContent=`Guesses left: ${MAX-rows.length}`;
       }
       else if(cur.length<N){ cur+=k; }
@@ -613,8 +626,26 @@ let curKeyHandler=null, hangKeys=null;
 function wordleKeys(e){ if(curKeyHandler) curKeyHandler(e); }
 const _close=closeHint;
 
+const TOUCH=matchMedia("(pointer:coarse)").matches;
+/* long clues shrink to fit their card */
+function fitClue(){
+  const c=$("cClue"); let f=25; c.style.fontSize=f+"px";
+  while(c.scrollHeight>c.clientHeight && f>16){ f--; c.style.fontSize=f+"px"; }
+}
+/* in-slide confirm box (browser pop-ups would leave full screen) */
+function ask(text,yes,onYes){
+  $("askText").textContent=text; $("askYes").textContent=yes;
+  $("ask").classList.add("open"); $("askNo").focus();
+  $("askYes").onclick=()=>{ $("ask").classList.remove("open"); onYes(); };
+}
+$("askNo").onclick=()=>$("ask").classList.remove("open");
 /* 16:9 scaling and full screen */
+let lastW=0,lastH=0;
 function fitStage(){
+  const typing=document.activeElement===$("ansInput");
+  // the on-screen keyboard shrinks the height only; keep the slide size while typing
+  if(typing && innerWidth===lastW && innerHeight<lastH) return;
+  lastW=innerWidth; lastH=innerHeight;
   const st=$("stage"), k=Math.min(innerWidth/1600, innerHeight/900);
   st.style.transform=`scale(${k})`;
   st.style.left=((innerWidth-1600*k)/2)+"px";
