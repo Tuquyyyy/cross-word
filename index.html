@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PET Crossword</title>
+<meta name="description" content="Ô chữ từ vựng PET Part 11 cho lớp Mr. Waylay — chọn số, giải từ, mở mini game gợi ý khi cần.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#e9eef4;
+  --sheet:#ffffff;
+  --ink:#1b2a41;
+  --ink-soft:#4b5d78;
+  --line:#9fb0c4;
+  --rule:#cfd9e4;
+  --red:#d7263d;
+  --red-deep:#a3172a;
+  --red-wash:#fde7ea;
+  --ok:#1f7a4d;
+  --ok-wash:#e2f3ea;
+  --warn:#b7791f;
+  --hint:#6a7b92;
+  --cell:30px;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 16px 48px}
+
+/* header */
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+.top h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);line-height:1;margin:0;letter-spacing:-.02em}
+.top h1 small{display:block;font-weight:400;font-size:16px;letter-spacing:0;color:var(--ink-soft);margin-top:6px;font-family:var(--body)}
+.progress{font-family:var(--display);font-size:15px;color:var(--ink-soft);display:flex;align-items:center;gap:12px}
+.bar{width:140px;height:8px;background:var(--rule);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);width:0;transition:width .4s}
+.linkbtn{background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:3px;color:var(--ink-soft);font-size:15px}
+
+/* picker */
+.picker{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.picker h2{font-family:var(--display);font-size:24px;font-weight:600;margin:0 0 4px}
+.picker p.lead{margin:0 0 14px;color:var(--ink-soft);font-size:15px}
+.nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px}
+.num{position:relative;aspect-ratio:1;border:2px solid var(--ink);background:var(--sheet);border-radius:4px;font-family:var(--display);font-weight:800;font-size:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;transition:transform .12s,background .12s}
+.num span{font-family:var(--body);font-weight:400;font-size:12px;color:var(--ink-soft);margin-top:6px}
+.num:hover{background:var(--red-wash);transform:translateY(-2px)}
+.num.done{background:var(--ink);color:#fff}
+.num.done span{color:#c9d4e2}
+.intro{grid-column:1/-1;background:var(--sheet);border-left:6px solid var(--red);padding:14px 18px;font-size:16px}
+.intro b{font-family:var(--display)}
+
+/* play */
+.play{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+.board{background:var(--sheet);border:2px solid var(--ink);border-radius:4px;padding:14px;overflow:auto}
+.grid{display:grid;grid-template-columns:repeat(var(--cols),var(--cell));grid-template-rows:repeat(var(--rows),var(--cell));margin:0 auto;width:max-content}
+.cell{position:relative;border:1px solid var(--line);margin:-.5px;background:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:calc(var(--cell)*.55);text-transform:uppercase;transition:background .2s,color .2s}
+.cell .n{position:absolute;top:1px;left:2px;font-family:var(--body);font-weight:700;font-size:calc(var(--cell)*.27);line-height:1;color:var(--ink-soft)}
+.cell.solved{background:#f4f7fa}
+.cell.known{color:var(--ink)}
+.cell.peek{color:var(--hint);font-weight:600}
+.cell.sel{background:var(--red);border-color:var(--red-deep);color:#fff;z-index:1}
+.cell.sel .n{color:#fff}
+.cell.sel.peek{color:#ffd9de}
+.cell.flash{animation:flash .7s}
+@keyframes flash{0%{background:var(--ok)}100%{background:#f4f7fa}}
+.side{position:sticky;top:16px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--sheet);border:2px solid var(--ink);border-radius:4px;padding:16px 18px}
+.tag{font-family:var(--display);font-weight:800;font-size:40px;line-height:1;display:flex;align-items:baseline;gap:10px}
+.tag em{font-style:normal;font-weight:400;font-size:17px;color:var(--ink-soft)}
+.len{display:inline-block;margin-top:8px;background:var(--red);color:#fff;font-family:var(--display);font-weight:600;font-size:15px;padding:3px 10px;border-radius:3px}
+.clue{font-size:19px;margin:12px 0 0}
+.answer{display:flex;gap:8px;margin-top:14px}
+.answer input{flex:1;min-width:0;border:2px solid var(--ink);border-radius:4px;padding:10px 12px;font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.12em;text-transform:uppercase;background:#fff;color:var(--ink)}
+.answer input:disabled{background:var(--ok-wash);border-color:var(--ok);color:var(--ok)}
+.btn{border:2px solid var(--ink);background:var(--sheet);border-radius:4px;padding:10px 16px;font-family:var(--display);font-weight:600;font-size:16px}
+.btn:hover{background:var(--paper)}
+.btn.solid{background:var(--ink);color:#fff}
+.btn.solid:hover{background:#2c3f5c}
+.btn.red{background:var(--red);border-color:var(--red-deep);color:#fff}
+.btn.red:hover{background:var(--red-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .btn{flex:1}
+.msg{min-height:24px;margin-top:10px;font-weight:700}
+.msg.ok{color:var(--ok)}
+.msg.bad{color:var(--red)}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.hintbox{border-style:dashed}
+.hintbox h3{font-family:var(--display);margin:0 0 4px;font-size:18px}
+.hintbox p{margin:0;color:var(--ink-soft);font-size:15px}
+.hintbox .btn{margin-top:12px;width:100%}
+.used{margin-top:8px;font-size:14px;color:var(--ink-soft)}
+
+/* modal */
+.veil{position:fixed;inset:0;background:rgba(27,42,65,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.veil.open{display:flex}
+.modal{background:var(--sheet);border:2px solid var(--ink);border-radius:6px;width:min(640px,100%);max-height:92vh;overflow:auto;padding:22px 22px 18px;animation:pop .2s ease-out}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+.modal h3{font-family:var(--display);font-size:26px;margin:0;line-height:1.1}
+.modal .how{color:var(--ink-soft);margin:6px 0 16px;font-size:15px}
+.modal .foot{display:flex;gap:8px;justify-content:space-between;margin-top:18px;padding-top:14px;border-top:1px solid var(--rule);flex-wrap:wrap}
+.gclue{background:var(--paper);padding:10px 14px;border-radius:4px;font-size:15px;margin-bottom:16px}
+.big{font-size:22px;line-height:1.45}
+.big b{font-family:var(--display)}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--red);margin:0 4px}
+
+.slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0 16px}
+.slot{width:40px;height:46px;border:2px solid var(--ink);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:24px;background:#fff}
+.slot.wide{width:auto;min-width:56px;padding:0 10px}
+.slot.empty{border-style:dashed;border-color:var(--line)}
+.slot.fill{cursor:pointer}
+.slot.miss{color:var(--red)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{min-width:44px;height:48px;padding:0 12px;border:2px solid var(--ink);border-bottom-width:5px;border-radius:5px;background:#fff;font-family:var(--display);font-weight:800;font-size:22px}
+.tile:hover{background:var(--red-wash)}
+.tile.gone{visibility:hidden}
+.keys{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-top:6px}
+.key{height:44px;border:2px solid var(--ink);border-radius:4px;background:#fff;font-family:var(--display);font-weight:800;font-size:18px;padding:0}
+.key.hit{background:var(--ok);border-color:var(--ok);color:#fff}
+.key.no{background:var(--rule);border-color:var(--rule);color:var(--hint)}
+.key.part{background:var(--warn);border-color:var(--warn);color:#fff}
+.key.wide{grid-column:span 2;font-size:14px}
+.lives{display:flex;gap:6px;justify-content:center;margin-bottom:12px}
+.lives i{width:26px;height:8px;border-radius:4px;background:var(--red)}
+.lives i.lost{background:var(--rule)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{border:2px solid var(--ink);border-radius:4px;background:#fff;padding:16px 10px;font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.06em}
+.choice:hover{background:var(--paper)}
+.choice.right{background:var(--ok);border-color:var(--ok);color:#fff}
+.choice.wrong{background:var(--rule);border-color:var(--rule);color:var(--hint);text-decoration:line-through}
+.wgrid{display:flex;flex-direction:column;gap:5px;align-items:center;margin-bottom:12px}
+.wrow{display:flex;gap:4px}
+.wc{width:var(--wc,38px);height:var(--wc,38px);border:2px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:calc(var(--wc,38px)*.5);background:#fff}
+.wc.typed{border-color:var(--ink)}
+.wc.g{background:var(--ok);border-color:var(--ok);color:#fff}
+.wc.y{background:var(--warn);border-color:var(--warn);color:#fff}
+.wc.x{background:var(--hint);border-color:var(--hint);color:#fff}
+.legend{font-size:14px;color:var(--ink-soft);text-align:center;margin-bottom:10px}
+.legend b{padding:0 6px;border-radius:3px;color:#fff;font-weight:400}
+.status{text-align:center;font-weight:700;min-height:26px;margin-top:12px}
+.status.ok{color:var(--ok)}
+.status.bad{color:var(--red)}
+.win{background:var(--ok-wash);border:2px solid var(--ok);border-radius:4px;padding:14px;text-align:center;margin-top:12px}
+.win b{display:block;font-family:var(--display);font-size:28px;letter-spacing:.1em;color:var(--ok)}
+
+.done-all{background:var(--ink);color:#fff;padding:18px 20px;border-radius:4px;margin-bottom:22px;font-family:var(--display);font-size:22px;display:none}
+.done-all.show{display:block}
+[hidden]{display:none!important}
+
+@media (max-width:900px){
+  .play{grid-template-columns:minmax(0,1fr)}
+  .side{position:static}
+  .picker{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .keys{grid-template-columns:repeat(7,1fr)}
+  .choices{grid-template-columns:1fr}
+  .slot{width:34px;height:40px;font-size:20px}
+  .tag{font-size:32px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>PET Crossword<small id="subtitle">Part 11, lớp Tiếng Anh Mr. Waylay</small></h1>
+    <div class="progress"><span id="progText">0 / 23 từ</span><div class="bar"><i id="progBar"></i></div><button class="linkbtn" id="resetAll">Làm lại từ đầu</button></div>
+  </header>
+
+  <div class="done-all" id="doneAll">Cả lớp đã giải xong toàn bộ ô chữ. Tuyệt vời!</div>
+
+  <!-- PICKER -->
+  <section id="pickerView" class="picker">
+    <div class="intro"><b>Cách chơi:</b> chọn một số để xem ô chữ. Các ô của từ đó sẽ được tô đỏ để biết từ có mấy chữ cái. Nếu chưa nghĩ ra, bấm <b>Gợi ý</b> để chơi một mini game ngẫu nhiên.</div>
+    <div>
+      <h2>Hàng ngang</h2>
+      <p class="lead">Across</p>
+      <div class="nums" id="numsA"></div>
+    </div>
+    <div>
+      <h2>Hàng dọc</h2>
+      <p class="lead">Down</p>
+      <div class="nums" id="numsD"></div>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="playView" class="play" hidden>
+    <div class="board" id="board"><div class="grid" id="grid"></div></div>
+    <aside class="side">
+      <div class="card" id="clueCard">
+        <div class="tag"><span id="cNum">2</span><em id="cDir">Hàng ngang</em></div>
+        <span class="len" id="cLen">6 chữ cái</span>
+        <p class="clue" id="cClue"></p>
+        <form class="answer" id="ansForm" autocomplete="off">
+          <input id="ansInput" aria-label="Đáp án" spellcheck="false" autocapitalize="characters">
+          <button class="btn solid" type="submit">Kiểm tra</button>
+        </form>
+        <div class="msg" id="msg"></div>
+      </div>
+      <div class="card hintbox" id="hintCard">
+        <h3>Chưa nghĩ ra?</h3>
+        <p>Mỗi lần bấm sẽ ra một trò gợi ý ngẫu nhiên.</p>
+        <button class="btn red" id="hintBtn">Gợi ý</button>
+        <div class="used" id="usedHints"></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="backBtn">Chọn số khác</button>
+        <button class="btn" id="revealBtn">Đáp án</button>
+      </div>
+    </aside>
+  </section>
+</div>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal">
+    <h3 id="mTitle"></h3>
+    <p class="how" id="mHow"></p>
+    <div class="gclue" id="mClue"></div>
+    <div id="mBody"></div>
+    <div class="foot">
+      <button class="btn" id="mOther">Đổi trò khác</button>
+      <button class="btn solid" id="mClose">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ DỮ LIỆU Ô CHỮ ============ */
+const PUZZLE = {
+  id: "pet-11",
+  title: "Part 11",
+  rows: 17, cols: 28,
+  words: [
+    {n:2,d:"A",r:0,c:13,a:"PURSUE",syl:["PUR","SUE"],clue:"Follow someone or something in order to catch or attack them.",vi:"đuổi theo, truy đuổi",ex:"The police had to ___ the thief through the busy market."},
+    {n:3,d:"A",r:0,c:22,a:"PUSH",syl:["PUSH"],clue:"Exert force on someone or something, typically with one's hand, in order to move them away from oneself.",vi:"đẩy",ex:"The car stopped, so we had to get out and ___ it."},
+    {n:5,d:"A",r:2,c:19,a:"PUBLICITY",syl:["PUB","LI","CI","TY"],clue:"The notice or attention given to someone or something by the media.",vi:"sự quảng bá, sự chú ý của truyền thông",ex:"The new film got a lot of ___ before it came out."},
+    {n:6,d:"A",r:4,c:8,a:"QUICKLY",syl:["QUICK","LY"],clue:"At a fast speed.",vi:"một cách nhanh chóng",ex:"She finished her homework ___ so she could go out and play."},
+    {n:7,d:"A",r:4,c:16,a:"QUEEN",syl:["QUEEN"],clue:"The female ruler of an independent state, especially one who inherits the position by right of birth.",vi:"nữ hoàng",ex:"The ___ lived in a huge palace with her family."},
+    {n:9,d:"A",r:6,c:1,a:"QUEUE",syl:["QUEUE"],clue:"A line or sequence of people or vehicles awaiting their turn to be attended to or to proceed.",vi:"hàng người (xe) xếp hàng chờ",ex:"The fans had to wait in a long ___ to buy tickets."},
+    {n:10,d:"A",r:6,c:16,a:"PUBLISH",syl:["PUB","LISH"],clue:"Prepare and issue a book, journal, piece of music, or other work for public sale.",vi:"xuất bản, phát hành",ex:"The company is going to ___ her first novel next year."},
+    {n:11,d:"A",r:7,c:7,a:"PROPOSAL",syl:["PRO","PO","SAL"],clue:"A plan or suggestion, especially a formal or written one, put forward for consideration or discussion by others.",vi:"bản đề xuất, lời đề nghị",ex:"The students wrote a ___ for a longer lunch break."},
+    {n:13,d:"A",r:9,c:2,a:"PROVIDE",syl:["PRO","VIDE"],clue:"Make available for use; supply.",vi:"cung cấp",ex:"The hotel will ___ towels and soap for every guest."},
+    {n:14,d:"A",r:10,c:12,a:"QUALITY",syl:["QUAL","I","TY"],clue:"The standard of something as measured against other things of a similar kind.",vi:"chất lượng",ex:"These shoes are expensive, but the ___ is excellent."},
+    {n:15,d:"A",r:11,c:0,a:"PROVE",syl:["PROVE"],clue:"Demonstrate the truth or existence of something by evidence or argument.",vi:"chứng minh",ex:"Can you ___ that you were at home last night?"},
+    {n:16,d:"A",r:12,c:7,a:"PURCHASE",syl:["PUR","CHASE"],clue:"Acquire something by paying for it; buy.",vi:"mua (trang trọng)",ex:"You can ___ tickets online or at the station."},
+    {n:17,d:"A",r:14,c:6,a:"QUALIFICATION",syl:["QUAL","I","FI","CA","TION"],clue:"A quality or accomplishment that makes someone suitable for a particular job or activity.",vi:"bằng cấp, trình độ chuyên môn",ex:"You need a teaching ___ to work at this school."},
+    {n:18,d:"A",r:16,c:8,a:"PUNISHMENT",syl:["PUN","ISH","MENT"],clue:"The infliction or imposition of a penalty as retribution for an offense.",vi:"hình phạt, sự trừng phạt",ex:"As a ___ for being late, he had to clean the classroom."},
+    {n:1,d:"D",r:0,c:10,a:"PUBLIC",syl:["PUB","LIC"],clue:"Of or concerning the people as a whole.",vi:"(thuộc) công cộng, công chúng",ex:"The new library is open to the ___ every day."},
+    {n:2,d:"D",r:0,c:13,a:"PURELY",syl:["PURE","LY"],clue:"Entirely; exclusively.",vi:"hoàn toàn, chỉ đơn thuần",ex:"We met ___ by chance at the bus station."},
+    {n:3,d:"D",r:0,c:22,a:"PULL",syl:["PULL"],clue:"Exert force on someone or something so as to cause movement toward oneself.",vi:"kéo",ex:"Hold the rope and ___ it as hard as you can!"},
+    {n:4,d:"D",r:1,c:20,a:"QUANTITY",syl:["QUAN","TI","TY"],clue:"The amount or number of a material or immaterial thing not usually estimated by spatial measurement.",vi:"số lượng",ex:"The recipe only needs a small ___ of sugar."},
+    {n:6,d:"D",r:4,c:8,a:"QUARREL",syl:["QUAR","REL"],clue:"An angry argument or disagreement, typically between people who are usually on good terms.",vi:"cuộc cãi vã",ex:"The two brothers had a ___ about who should wash the dishes."},
+    {n:8,d:"D",r:5,c:4,a:"PURPOSE",syl:["PUR","POSE"],clue:"The reason for which something is done or created or for which something exists.",vi:"mục đích",ex:"What is the ___ of your visit to London?"},
+    {n:10,d:"D",r:6,c:16,a:"PUBLICATION",syl:["PUB","LI","CA","TION"],clue:"The action of making something generally known.",vi:"sự công bố, sự xuất bản",ex:"The ___ of the exam results will be next Monday."},
+    {n:12,d:"D",r:7,c:10,a:"PROTECTION",syl:["PRO","TEC","TION"],clue:"The action of protecting someone or something, or the state of being protected.",vi:"sự bảo vệ",ex:"Wear a hat for ___ from the sun."},
+    {n:13,d:"D",r:9,c:2,a:"PROUDLY",syl:["PROUD","LY"],clue:"With feelings of deep pleasure or satisfaction in one's own achievements.",vi:"một cách tự hào",ex:"She ___ showed her parents her certificate."}
+  ]
+};
+/* Từ nhiễu cho trò "Chọn 1 trong 4" */
+const DECOYS = ["PRIZE","PROUD","PRINT","PRICE","QUIET","QUITE","QUOTE","QUICK","PURSE","PUPIL","PUZZLE","PROMISE","PRODUCE","PROGRAM","PROBLEM","PRIVATE","PRESENT","PREPARE","PRESSURE","PRACTICE","QUESTION","PRINCESS","POSITION","POLLUTION","PRODUCTION","PROMOTION","PREDICTION","PREPARATION","PRESENTATION","PUNCTUATION","PUBLISHER","POPULARITY","PERSONALITY","QUANTIFICATION","PURIFICATION","PUNCTUAL","PURPLE","PULSE","PUNCH","PUNISH","QUARTER","QUALIFY","QUANTUM","PROPERLY","PROBABLY","PRIMARY","PROJECT","PROTEST","PROVINCE","PUBLICLY","QUEUES","QUEST","QUAKE"];
+
+/* ============ TRẠNG THÁI ============ */
+const W = PUZZLE.words.map((w,i)=>({...w,id:i,key:w.n+w.d}));
+const KEY = "crossword-"+PUZZLE.id;
+let state = {solved:{},peek:{},hints:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.solved) state=Object.assign(state,s);}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+
+const cellsOf = w => [...w.a].map((ch,i)=>({r:w.r+(w.d==="D"?i:0),c:w.c+(w.d==="A"?i:0),ch}));
+const solution = {};               // "r,c" -> letter
+const startNum = {};               // "r,c" -> number
+W.forEach(w=>{cellsOf(w).forEach(p=>solution[p.r+","+p.c]=p.ch); startNum[w.r+","+w.c]=w.n;});
+
+let cur = null;                    // từ đang chọn
+let lastGame = null;
+
+const $ = id => document.getElementById(id);
+const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc = s => s.replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const dirName = d => d==="A"?"Hàng ngang":"Hàng dọc";
+
+/* ============ CHỌN SỐ ============ */
+function renderPicker(){
+  ["A","D"].forEach(d=>{
+    $("nums"+d).innerHTML = W.filter(w=>w.d===d).map(w=>
+      `<button class="num ${state.solved[w.key]?"done":""}" data-id="${w.id}" aria-label="${w.n} ${dirName(w.d)}">${w.n}<span>${state.solved[w.key]?"đã giải":w.a.length+" chữ"}</span></button>`).join("");
+  });
+  const k=Object.keys(state.solved).length;
+  $("progText").textContent = k+" / "+W.length+" từ";
+  $("progBar").style.width = (k/W.length*100)+"%";
+  $("doneAll").classList.toggle("show",k===W.length);
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest(".num"); if(b) openWord(W[+b.dataset.id]);
+});
+
+/* ============ LƯỚI ============ */
+function knownLetter(k){
+  // chữ đã biết tại ô: từ đã giải đi qua ô này
+  for(const w of W){ if(!state.solved[w.key]) continue;
+    for(const p of cellsOf(w)) if(p.r+","+p.c===k) return p.ch; }
+  return null;
+}
+function renderGrid(){
+  const g=$("grid");
+  g.style.setProperty("--cols",PUZZLE.cols); g.style.setProperty("--rows",PUZZLE.rows);
+  const selSet = cur? new Map(cellsOf(cur).map((p,i)=>[p.r+","+p.c,i])) : new Map();
+  const typed = cur? $("ansInput").value.toUpperCase() : "";
+  const peek = cur? (state.peek[cur.key]||[]) : [];
+  let html="";
+  for(let r=0;r<PUZZLE.rows;r++)for(let c=0;c<PUZZLE.cols;c++){
+    const k=r+","+c;
+    if(!solution[k]){html+=`<div></div>`;continue;}
+    let cls="cell", txt="";
+    const known=knownLetter(k);
+    if(known){cls+=" solved known";txt=known;}
+    if(selSet.has(k)){
+      cls+=" sel"; const i=selSet.get(k);
+      if(typed[i]) {txt=typed[i]; cls=cls.replace(" known","");}
+      else if(!known && peek.includes(i)){txt=solution[k];cls+=" peek";}
+    }
+    html+=`<div class="${cls}" data-k="${k}">${startNum[k]?`<span class="n">${startNum[k]}</span>`:""}${txt}</div>`;
+  }
+  g.innerHTML=html;
+  fitCells();
+}
+function fitCells(){
+  const avail=$("board").clientWidth-32;
+  const size=Math.max(18,Math.min(38,Math.floor(avail/PUZZLE.cols)));
+  document.documentElement.style.setProperty("--cell",size+"px");
+}
+addEventListener("resize",()=>{ if(cur) fitCells(); });
+
+/* ============ MỞ TỪ ============ */
+function openWord(w){
+  cur=w;
+  $("pickerView").hidden=true; $("playView").hidden=false;
+  $("cNum").textContent=w.n; $("cDir").textContent=dirName(w.d)+" ("+(w.d==="A"?"Across":"Down")+")";
+  $("cLen").textContent=w.a.length+" chữ cái";
+  $("cClue").textContent=w.clue;
+  const inp=$("ansInput"); inp.maxLength=w.a.length;
+  const done=!!state.solved[w.key];
+  inp.value=done?w.a:""; inp.disabled=done;
+  $("msg").textContent=done?"Từ này đã giải xong.":""; $("msg").className="msg"+(done?" ok":"");
+  $("hintBtn").disabled=done; $("revealBtn").disabled=done;
+  renderUsed();
+  renderGrid();
+  scrollToWord();
+  if(!done && matchMedia("(min-width:901px)").matches) inp.focus();
+  scrollTo({top:0,behavior:"smooth"});
+}
+function scrollToWord(){
+  const el=$("grid").querySelector(".cell.sel"); if(!el) return;
+  const b=$("board"); const left=el.offsetLeft-b.clientWidth/3;
+  b.scrollTo({left:Math.max(0,left),behavior:"smooth"});
+}
+function renderUsed(){
+  const u=state.hints[cur.key]||0;
+  $("usedHints").textContent=u?`Đã dùng ${u} gợi ý cho từ này.`:"";
+}
+$("ansInput").addEventListener("input",e=>{
+  e.target.value=e.target.value.replace(/[^a-z]/gi,"").toUpperCase();
+  $("msg").textContent=""; renderGrid();
+});
+$("ansForm").addEventListener("submit",e=>{
+  e.preventDefault(); if(!cur||state.solved[cur.key]) return;
+  const v=$("ansInput").value.toUpperCase();
+  if(v.length<cur.a.length){ setMsg(`Cần đủ ${cur.a.length} chữ cái, mới có ${v.length}.`,"bad"); return; }
+  if(v===cur.a) markSolved(cur,"Chính xác!");
+  else setMsg("Chưa đúng. Thử lại hoặc bấm Gợi ý.","bad");
+});
+function setMsg(t,kind){
+  const m=$("msg"); m.textContent=t; m.className="msg "+(kind||"");
+  if(kind==="bad"){const c=$("clueCard");c.classList.remove("shake");void c.offsetWidth;c.classList.add("shake");}
+}
+function markSolved(w,text){
+  state.solved[w.key]=1; save();
+  if(cur===w){
+    $("ansInput").value=w.a; $("ansInput").disabled=true;
+    $("hintBtn").disabled=true; $("revealBtn").disabled=true;
+    setMsg(text,"ok");
+    renderGrid();
+    cellsOf(w).forEach(p=>{const el=$("grid").querySelector(`[data-k="${p.r},${p.c}"]`); if(el){el.classList.remove("sel");el.classList.add("flash");}});
+  }
+  renderPicker();
+}
+$("backBtn").onclick=()=>{cur=null;$("playView").hidden=true;$("pickerView").hidden=false;renderPicker();};
+$("revealBtn").onclick=()=>{ if(cur && confirm("Hiện đáp án cho từ này?")) markSolved(cur,"Đáp án: "+cur.a); };
+$("resetAll").onclick=()=>{ if(confirm("Xoá toàn bộ tiến độ và chơi lại từ đầu?")){state={solved:{},peek:{},hints:{}};save();$("backBtn").onclick();} };
+
+/* ============ GỢI Ý / MINI GAME ============ */
+const GAMES = {
+  reveal:{title:"Lật chữ cái",how:"Một chữ cái ngẫu nhiên vừa được mở trên ô chữ (chữ màu nhạt trong các ô đỏ)."},
+  meaning:{title:"Nghĩa tiếng Việt",how:"Đây là nghĩa tiếng Việt của từ cần tìm."},
+  example:{title:"Câu ví dụ",how:"Từ cần tìm nằm ở chỗ trống trong câu này."},
+  hangman:{title:"Hangman",how:"Đoán từng chữ cái. Sai quá 6 lần là thua."},
+  anagram:{title:"Sắp xếp chữ cái",how:"Bấm các chữ cái theo đúng thứ tự để ghép thành từ. Bấm vào ô phía trên để trả chữ về."},
+  syllable:{title:"Ghép âm tiết",how:"Từ đã được tách thành âm tiết. Bấm theo đúng thứ tự để ghép lại."},
+  choice:{title:"Chọn 1 trong 4",how:"Chọn từ đúng với gợi ý."},
+  wordle:{title:"Wordle mini",how:"Đoán cả từ. Mỗi lần đoán, các chữ sẽ đổi màu."},
+  noise:{title:"Chọn chữ đúng",how:"Có vài chữ cái thừa lẫn vào. Chọn đúng chữ, đúng thứ tự để ghép thành từ."}
+};
+function availableGames(w){
+  const peek=state.peek[w.key]||[];
+  return Object.keys(GAMES).filter(g=>{
+    if(g==="syllable") return w.syl.length>1;
+    if(g==="reveal") return peek.length < w.a.length-1;   // luôn chừa ít nhất 1 chữ
+    return true;
+  });
+}
+function openHint(exclude){
+  if(!cur||state.solved[cur.key]) return;
+  let pool=availableGames(cur).filter(g=>g!==exclude&&g!==lastGame);
+  if(!pool.length) pool=availableGames(cur);
+  const g=pool[Math.floor(Math.random()*pool.length)];
+  lastGame=g;
+  curKeyHandler=null; document.removeEventListener("keydown",wordleKeys); $("mOther").hidden=false;
+  state.hints[cur.key]=(state.hints[cur.key]||0)+1; save(); renderUsed();
+  $("mTitle").textContent=GAMES[g].title;
+  $("mHow").textContent=GAMES[g].how;
+  $("mClue").innerHTML=`<b>${cur.n} ${dirName(cur.d)}</b> (${cur.a.length} chữ): ${esc(cur.clue)}`;
+  $("mBody").innerHTML="";
+  RUN[g](cur,$("mBody"));
+  $("veil").classList.add("open");
+  setTimeout(()=>{const f=$("mBody").querySelector("button,input");(f||$("mClose")).focus();},50);
+}
+function closeHint(){ $("veil").classList.remove("open"); document.removeEventListener("keydown",wordleKeys); $("hintBtn").focus(); }
+$("hintBtn").onclick=()=>openHint();
+$("mOther").onclick=()=>{document.removeEventListener("keydown",wordleKeys);openHint(lastGame);};
+$("mClose").onclick=closeHint;
+$("veil").addEventListener("click",e=>{if(e.target===$("veil"))closeHint();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("veil").classList.contains("open"))closeHint();});
+
+function gameWon(box,w){
+  const d=document.createElement("div"); d.className="win";
+  d.innerHTML=`Chính xác! Từ đã được điền vào ô chữ.<b>${w.a}</b>`;
+  box.appendChild(d);
+  markSolved(w,"Đã giải bằng mini game!");
+  $("mOther").hidden=true;
+}
+
+/* bộ ghép thẻ dùng chung: anagram, ghép âm tiết, chọn chữ có nhiễu */
+function tileGame(box,w,pieces,targetCount){
+  box.innerHTML=`<div class="slots" data-s></div><div class="tiles" data-t></div><div class="status" data-st></div>`;
+  const slotsEl=box.querySelector("[data-s]"), tilesEl=box.querySelector("[data-t]"), st=box.querySelector("[data-st]");
+  const tiles=pieces.map((p,i)=>({id:i,t:p}));
+  let picked=[]; let over=false;
+  const wide = pieces.some(p=>p.length>1);
+  function draw(){
+    let s="";
+    for(let i=0;i<targetCount;i++){
+      const p=picked[i];
+      s+= p? `<button class="slot fill ${wide?"wide":""}" data-back="${i}">${p.t}</button>` : `<div class="slot empty ${wide?"wide":""}"></div>`;
+    }
+    slotsEl.innerHTML=s;
+    tilesEl.innerHTML=tiles.map(t=>`<button class="tile ${picked.includes(t)?"gone":""}" data-tile="${t.id}">${t.t}</button>`).join("");
+  }
+  box.addEventListener("click",e=>{
+    if(over) return;
+    const t=e.target.closest("[data-tile]"), b=e.target.closest("[data-back]");
+    if(t&&picked.length<targetCount){ picked.push(tiles[+t.dataset.tile]); }
+    else if(b){ picked.splice(+b.dataset.back,1); }
+    else return;
+    st.textContent=""; st.className="status";
+    draw();
+    if(picked.length===targetCount){
+      const word=picked.map(p=>p.t).join("");
+      if(word===w.a){ over=true; gameWon(box,w); }
+      else { st.textContent="Chưa đúng thứ tự. Bấm vào chữ phía trên để sửa."; st.className="status bad"; }
+    }
+  });
+  draw();
+}
+function scramble(arr){ if(arr.length<2) return arr; let s; let n=0; do{s=shuffle(arr);n++}while(s.join("")===arr.join("")&&n<20); return s; }
+
+const RUN = {
+  reveal(w,box){
+    const peek=state.peek[w.key]||(state.peek[w.key]=[]);
+    const typed=$("ansInput").value.toUpperCase();
+    let cand=[...w.a].map((_,i)=>i).filter(i=>!peek.includes(i));
+    const notTyped=cand.filter(i=>typed[i]!==w.a[i]); if(notTyped.length) cand=notTyped;
+    const i=cand[Math.floor(Math.random()*cand.length)];
+    peek.push(i); save();
+    // xoá chữ đã gõ sai ở vị trí này để chữ gợi ý hiện ra
+    if(typed[i] && typed[i]!==w.a[i]){ $("ansInput").value=typed.slice(0,i); }
+    renderGrid();
+    const shown=[...w.a].map((ch,k)=>peek.includes(k)?ch:"_").join(" ");
+    box.innerHTML=`<p class="big">Chữ thứ <b>${i+1}</b> là <b>${w.a[i]}</b>.</p><div class="slots">${[...w.a].map((ch,k)=>`<div class="slot ${peek.includes(k)?"":"empty"}">${peek.includes(k)?ch:""}</div>`).join("")}</div><p class="how" style="text-align:center">Đã mở ${peek.length} / ${w.a.length} chữ. Bấm "Đổi trò khác" hoặc Gợi ý lần nữa để có thêm.</p>`;
+  },
+  meaning(w,box){
+    box.innerHTML=`<p class="big">Nghĩa tiếng Việt: <b>${esc(w.vi)}</b></p><p class="how">Từ bắt đầu bằng chữ <b>${w.a[0]}</b> và có ${w.a.length} chữ cái.</p>`;
+  },
+  example(w,box){
+    box.innerHTML=`<p class="big">${esc(w.ex).replace("___",'<span class="blank"></span>')}</p><p class="how">Điền từ còn thiếu (${w.a.length} chữ cái).</p>`;
+  },
+  hangman(w,box){
+    const MAX=6; let wrong=0, guessed=new Set(), over=false;
+    box.innerHTML=`<div class="lives" data-l></div><div class="slots" data-s></div><div class="keys" data-k></div><div class="status" data-st></div>`;
+    const L=box.querySelector("[data-l]"),S=box.querySelector("[data-s]"),K=box.querySelector("[data-k]"),st=box.querySelector("[data-st]");
+    K.innerHTML=[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(ch=>`<button class="key" data-ch="${ch}">${ch}</button>`).join("");
+    function draw(lose){
+      L.innerHTML=Array.from({length:MAX},(_,i)=>`<i class="${i<wrong?"lost":""}"></i>`).join("");
+      S.innerHTML=[...w.a].map(ch=>`<div class="slot ${guessed.has(ch)?"":(lose?"miss":"empty")}">${guessed.has(ch)||lose?ch:""}</div>`).join("");
+    }
+    function guess(ch){
+      if(over||guessed.has(ch)) return;
+      guessed.add(ch);
+      const btn=K.querySelector(`[data-ch="${ch}"]`); btn.disabled=true;
+      if(w.a.includes(ch)) btn.classList.add("hit"); else {btn.classList.add("no"); wrong++;}
+      if([...w.a].every(c=>guessed.has(c))){ over=true; draw(); gameWon(box,w); return; }
+      if(wrong>=MAX){ over=true; draw(true); st.className="status bad"; st.textContent=`Hết lượt! Từ đúng là ${w.a}. Thử viết lại vào ô đáp án nhé.`; return; }
+      st.textContent=`Còn ${MAX-wrong} lượt sai.`; st.className="status";
+      draw();
+    }
+    K.addEventListener("click",e=>{const b=e.target.closest("[data-ch]"); if(b) guess(b.dataset.ch);});
+    hangKeys=e=>{ if(/^[a-z]$/i.test(e.key)&&$("veil").classList.contains("open")) guess(e.key.toUpperCase()); };
+    draw(); st.textContent=`Còn ${MAX} lượt sai.`;
+    document.addEventListener("keydown",wordleKeys);
+    curKeyHandler=hangKeys;
+  },
+  anagram(w,box){ tileGame(box,w,scramble([...w.a]),w.a.length); },
+  syllable(w,box){ tileGame(box,w,scramble(w.syl),w.syl.length); },
+  noise(w,box){
+    const alpha="ABCDEFGHIJKLMNOPRSTUVWY";
+    const extra=Math.min(5,Math.max(3,Math.round(w.a.length/2)));
+    const noise=Array.from({length:extra},()=>alpha[Math.floor(Math.random()*alpha.length)]);
+    tileGame(box,w,shuffle([...w.a,...noise]),w.a.length);
+  },
+  choice(w,box){
+    const answers=W.map(x=>x.a);
+    const pool=[...new Set([...answers,...DECOYS])].filter(x=>x!==w.a);
+    const score=x=>Math.abs(x.length-w.a.length)*2 + (x[0]===w.a[0]?0:1) + (x.slice(0,2)===w.a.slice(0,2)?0:1) + Math.random()*1.5;
+    const opts=shuffle([w.a,...pool.sort((a,b)=>score(a)-score(b)).slice(0,3)]);
+    box.innerHTML=`<div class="choices">${opts.map(o=>`<button class="choice" data-o="${o}">${o}</button>`).join("")}</div><div class="status" data-st></div>`;
+    const st=box.querySelector("[data-st]"); let over=false;
+    box.querySelector(".choices").addEventListener("click",e=>{
+      const b=e.target.closest("[data-o]"); if(!b||over||b.disabled) return;
+      if(b.dataset.o===w.a){ over=true; b.classList.add("right"); st.textContent=""; gameWon(box,w); }
+      else { b.classList.add("wrong"); b.disabled=true; st.className="status bad"; st.textContent="Chưa đúng, chọn lại nhé."; }
+    });
+  },
+  wordle(w,box){
+    const MAX=6, N=w.a.length; let rows=[], cur="", over=false;
+    const avail=(box.clientWidth||Math.min(596,innerWidth-80));
+    const size=Math.max(16,Math.min(42,Math.floor((avail-(N-1)*4)/N)));
+    box.innerHTML=`<div class="legend"><b style="background:var(--ok)">xanh</b> đúng vị trí &nbsp; <b style="background:var(--warn)">vàng</b> có trong từ, sai vị trí &nbsp; <b style="background:var(--hint)">xám</b> không có</div><div class="wgrid" data-g style="--wc:${size}px"></div><div class="keys" data-k></div><div class="status" data-st></div>`;
+    const G=box.querySelector("[data-g]"),K=box.querySelector("[data-k]"),st=box.querySelector("[data-st]");
+    const keyState={};
+    function score(g){
+      const res=Array(N).fill("x"), left={};
+      for(let i=0;i<N;i++){ if(g[i]===w.a[i]) res[i]="g"; else left[w.a[i]]=(left[w.a[i]]||0)+1; }
+      for(let i=0;i<N;i++){ if(res[i]!=="g" && left[g[i]]>0){ res[i]="y"; left[g[i]]--; } }
+      return res;
+    }
+    function draw(){
+      let h="";
+      for(let r=0;r<MAX;r++){
+        h+=`<div class="wrow">`;
+        for(let i=0;i<N;i++){
+          if(r<rows.length){ h+=`<div class="wc ${rows[r].s[i]}">${rows[r].g[i]}</div>`; }
+          else if(r===rows.length && !over){ h+=`<div class="wc ${cur[i]?"typed":""}">${cur[i]||""}</div>`; }
+          else h+=`<div class="wc"></div>`;
+        }
+        h+=`</div>`;
+      }
+      G.innerHTML=h;
+      const cls={g:"hit",y:"part",x:"no"};
+      K.innerHTML=[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(ch=>`<button class="key ${keyState[ch]?cls[keyState[ch]]:""}" data-ch="${ch}">${ch}</button>`).join("")+
+        `<button class="key wide" data-act="del">Xoá</button><button class="key wide" data-act="enter">Đoán</button>`;
+    }
+    function press(k){
+      if(over) return;
+      if(k==="del"){ cur=cur.slice(0,-1); }
+      else if(k==="enter"){
+        if(cur.length<N){ st.className="status bad"; st.textContent=`Cần đủ ${N} chữ cái.`; return; }
+        const s=score(cur); rows.push({g:cur,s});
+        [...cur].forEach((ch,i)=>{ const rank={g:3,y:2,x:1}; if(!keyState[ch]||rank[s[i]]>rank[keyState[ch]]) keyState[ch]=s[i]; });
+        if(cur===w.a){ over=true; cur=""; draw(); st.textContent=""; gameWon(box,w); return; }
+        cur="";
+        if(rows.length>=MAX){ over=true; draw(); st.className="status bad"; st.textContent=`Hết lượt! Từ đúng là ${w.a}.`; return; }
+        st.className="status"; st.textContent=`Còn ${MAX-rows.length} lượt đoán.`;
+      }
+      else if(cur.length<N){ cur+=k; }
+      st.textContent= st.className.includes("bad")? "" : st.textContent; st.className="status";
+      draw();
+    }
+    K.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return; press(b.dataset.act||b.dataset.ch);});
+    curKeyHandler=e=>{
+      if(!$("veil").classList.contains("open")) return;
+      if(/^[a-z]$/i.test(e.key)) press(e.key.toUpperCase());
+      else if(e.key==="Backspace") press("del");
+      else if(e.key==="Enter"){ e.preventDefault(); press("enter"); }
+    };
+    document.addEventListener("keydown",wordleKeys);
+    draw(); st.textContent=`Bạn có ${MAX} lượt đoán.`;
+  }
+};
+/* bàn phím vật lý cho Hangman / Wordle */
+let curKeyHandler=null, hangKeys=null;
+function wordleKeys(e){ if(curKeyHandler) curKeyHandler(e); }
+const _close=closeHint;
+
+renderPicker();
+</script>
+</body>
+</html>
