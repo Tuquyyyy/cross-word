@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PET Crossword</title>
-<meta name="description" content="Ô chữ từ vựng PET Part 11 cho lớp Mr. Waylay — chọn số, giải từ, mở mini game gợi ý khi cần.">
+<meta name="description" content="PET Part 11 vocabulary crossword for Mr. Waylay's class. Pick a number, solve the word, and open a hint game when you are stuck.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
@@ -172,23 +172,23 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-of
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>PET Crossword<small id="subtitle">Part 11, lớp Tiếng Anh Mr. Waylay</small></h1>
-    <div class="progress"><span id="progText">0 / 23 từ</span><div class="bar"><i id="progBar"></i></div><button class="linkbtn" id="resetAll">Làm lại từ đầu</button></div>
+    <h1>PET Crossword<small id="subtitle">Part 11, Mr. Waylay's English class</small></h1>
+    <div class="progress"><span id="progText">0 / 23 words</span><div class="bar"><i id="progBar"></i></div><button class="linkbtn" id="resetAll">Start over</button></div>
   </header>
 
-  <div class="done-all" id="doneAll">Cả lớp đã giải xong toàn bộ ô chữ. Tuyệt vời!</div>
+  <div class="done-all" id="doneAll">The whole crossword is solved. Well done, everyone!</div>
 
   <!-- PICKER -->
   <section id="pickerView" class="picker">
-    <div class="intro"><b>Cách chơi:</b> chọn một số để xem ô chữ. Các ô của từ đó sẽ được tô đỏ để biết từ có mấy chữ cái. Nếu chưa nghĩ ra, bấm <b>Gợi ý</b> để chơi một mini game ngẫu nhiên.</div>
+    <div class="intro"><b>How to play:</b> pick a number to see the crossword. The squares for that word turn red, so you can count the letters. If you are stuck, press <b>Hint</b> to play a random mini game.</div>
     <div>
-      <h2>Hàng ngang</h2>
-      <p class="lead">Across</p>
+      <h2>Across</h2>
+      <p class="lead">Words that read left to right</p>
       <div class="nums" id="numsA"></div>
     </div>
     <div>
-      <h2>Hàng dọc</h2>
-      <p class="lead">Down</p>
+      <h2>Down</h2>
+      <p class="lead">Words that read top to bottom</p>
       <div class="nums" id="numsD"></div>
     </div>
   </section>
@@ -198,24 +198,24 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-of
     <div class="board" id="board"><div class="grid" id="grid"></div></div>
     <aside class="side">
       <div class="card" id="clueCard">
-        <div class="tag"><span id="cNum">2</span><em id="cDir">Hàng ngang</em></div>
-        <span class="len" id="cLen">6 chữ cái</span>
+        <div class="tag"><span id="cNum">2</span><em id="cDir">Across</em></div>
+        <span class="len" id="cLen">6 letters</span>
         <p class="clue" id="cClue"></p>
         <form class="answer" id="ansForm" autocomplete="off">
-          <input id="ansInput" aria-label="Đáp án" spellcheck="false" autocapitalize="characters">
-          <button class="btn solid" type="submit">Kiểm tra</button>
+          <input id="ansInput" aria-label="Your answer" spellcheck="false" autocapitalize="characters">
+          <button class="btn solid" type="submit">Check</button>
         </form>
         <div class="msg" id="msg"></div>
       </div>
       <div class="card hintbox" id="hintCard">
-        <h3>Chưa nghĩ ra?</h3>
-        <p>Mỗi lần bấm sẽ ra một trò gợi ý ngẫu nhiên.</p>
-        <button class="btn red" id="hintBtn">Gợi ý</button>
+        <h3>Stuck?</h3>
+        <p>Each time you press it, you get a random hint game.</p>
+        <button class="btn red" id="hintBtn">Hint</button>
         <div class="used" id="usedHints"></div>
       </div>
       <div class="row">
-        <button class="btn" id="backBtn">Chọn số khác</button>
-        <button class="btn" id="revealBtn">Đáp án</button>
+        <button class="btn" id="backBtn">Pick another number</button>
+        <button class="btn" id="revealBtn">Show answer</button>
       </div>
     </aside>
   </section>
@@ -228,48 +228,48 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-of
     <div class="gclue" id="mClue"></div>
     <div id="mBody"></div>
     <div class="foot">
-      <button class="btn" id="mOther">Đổi trò khác</button>
-      <button class="btn solid" id="mClose">Đóng</button>
+      <button class="btn" id="mOther">Try another game</button>
+      <button class="btn solid" id="mClose">Close</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ============ DỮ LIỆU Ô CHỮ ============ */
+/* ============ CROSSWORD DATA ============ */
 const PUZZLE = {
   id: "pet-11",
   title: "Part 11",
   rows: 17, cols: 28,
   words: [
-    {n:2,d:"A",r:0,c:13,a:"PURSUE",syl:["PUR","SUE"],clue:"Follow someone or something in order to catch or attack them.",vi:"đuổi theo, truy đuổi",ex:"The police had to ___ the thief through the busy market."},
-    {n:3,d:"A",r:0,c:22,a:"PUSH",syl:["PUSH"],clue:"Exert force on someone or something, typically with one's hand, in order to move them away from oneself.",vi:"đẩy",ex:"The car stopped, so we had to get out and ___ it."},
-    {n:5,d:"A",r:2,c:19,a:"PUBLICITY",syl:["PUB","LI","CI","TY"],clue:"The notice or attention given to someone or something by the media.",vi:"sự quảng bá, sự chú ý của truyền thông",ex:"The new film got a lot of ___ before it came out."},
-    {n:6,d:"A",r:4,c:8,a:"QUICKLY",syl:["QUICK","LY"],clue:"At a fast speed.",vi:"một cách nhanh chóng",ex:"She finished her homework ___ so she could go out and play."},
-    {n:7,d:"A",r:4,c:16,a:"QUEEN",syl:["QUEEN"],clue:"The female ruler of an independent state, especially one who inherits the position by right of birth.",vi:"nữ hoàng",ex:"The ___ lived in a huge palace with her family."},
-    {n:9,d:"A",r:6,c:1,a:"QUEUE",syl:["QUEUE"],clue:"A line or sequence of people or vehicles awaiting their turn to be attended to or to proceed.",vi:"hàng người (xe) xếp hàng chờ",ex:"The fans had to wait in a long ___ to buy tickets."},
-    {n:10,d:"A",r:6,c:16,a:"PUBLISH",syl:["PUB","LISH"],clue:"Prepare and issue a book, journal, piece of music, or other work for public sale.",vi:"xuất bản, phát hành",ex:"The company is going to ___ her first novel next year."},
-    {n:11,d:"A",r:7,c:7,a:"PROPOSAL",syl:["PRO","PO","SAL"],clue:"A plan or suggestion, especially a formal or written one, put forward for consideration or discussion by others.",vi:"bản đề xuất, lời đề nghị",ex:"The students wrote a ___ for a longer lunch break."},
-    {n:13,d:"A",r:9,c:2,a:"PROVIDE",syl:["PRO","VIDE"],clue:"Make available for use; supply.",vi:"cung cấp",ex:"The hotel will ___ towels and soap for every guest."},
-    {n:14,d:"A",r:10,c:12,a:"QUALITY",syl:["QUAL","I","TY"],clue:"The standard of something as measured against other things of a similar kind.",vi:"chất lượng",ex:"These shoes are expensive, but the ___ is excellent."},
-    {n:15,d:"A",r:11,c:0,a:"PROVE",syl:["PROVE"],clue:"Demonstrate the truth or existence of something by evidence or argument.",vi:"chứng minh",ex:"Can you ___ that you were at home last night?"},
-    {n:16,d:"A",r:12,c:7,a:"PURCHASE",syl:["PUR","CHASE"],clue:"Acquire something by paying for it; buy.",vi:"mua (trang trọng)",ex:"You can ___ tickets online or at the station."},
-    {n:17,d:"A",r:14,c:6,a:"QUALIFICATION",syl:["QUAL","I","FI","CA","TION"],clue:"A quality or accomplishment that makes someone suitable for a particular job or activity.",vi:"bằng cấp, trình độ chuyên môn",ex:"You need a teaching ___ to work at this school."},
-    {n:18,d:"A",r:16,c:8,a:"PUNISHMENT",syl:["PUN","ISH","MENT"],clue:"The infliction or imposition of a penalty as retribution for an offense.",vi:"hình phạt, sự trừng phạt",ex:"As a ___ for being late, he had to clean the classroom."},
-    {n:1,d:"D",r:0,c:10,a:"PUBLIC",syl:["PUB","LIC"],clue:"Of or concerning the people as a whole.",vi:"(thuộc) công cộng, công chúng",ex:"The new library is open to the ___ every day."},
-    {n:2,d:"D",r:0,c:13,a:"PURELY",syl:["PURE","LY"],clue:"Entirely; exclusively.",vi:"hoàn toàn, chỉ đơn thuần",ex:"We met ___ by chance at the bus station."},
-    {n:3,d:"D",r:0,c:22,a:"PULL",syl:["PULL"],clue:"Exert force on someone or something so as to cause movement toward oneself.",vi:"kéo",ex:"Hold the rope and ___ it as hard as you can!"},
-    {n:4,d:"D",r:1,c:20,a:"QUANTITY",syl:["QUAN","TI","TY"],clue:"The amount or number of a material or immaterial thing not usually estimated by spatial measurement.",vi:"số lượng",ex:"The recipe only needs a small ___ of sugar."},
-    {n:6,d:"D",r:4,c:8,a:"QUARREL",syl:["QUAR","REL"],clue:"An angry argument or disagreement, typically between people who are usually on good terms.",vi:"cuộc cãi vã",ex:"The two brothers had a ___ about who should wash the dishes."},
-    {n:8,d:"D",r:5,c:4,a:"PURPOSE",syl:["PUR","POSE"],clue:"The reason for which something is done or created or for which something exists.",vi:"mục đích",ex:"What is the ___ of your visit to London?"},
-    {n:10,d:"D",r:6,c:16,a:"PUBLICATION",syl:["PUB","LI","CA","TION"],clue:"The action of making something generally known.",vi:"sự công bố, sự xuất bản",ex:"The ___ of the exam results will be next Monday."},
-    {n:12,d:"D",r:7,c:10,a:"PROTECTION",syl:["PRO","TEC","TION"],clue:"The action of protecting someone or something, or the state of being protected.",vi:"sự bảo vệ",ex:"Wear a hat for ___ from the sun."},
-    {n:13,d:"D",r:9,c:2,a:"PROUDLY",syl:["PROUD","LY"],clue:"With feelings of deep pleasure or satisfaction in one's own achievements.",vi:"một cách tự hào",ex:"She ___ showed her parents her certificate."}
+    {n:2,d:"A",r:0,c:13,a:"PURSUE",syl:["PUR","SUE"],clue:"Follow someone or something in order to catch or attack them.",syn:"chase, follow",ex:"The police had to ___ the thief through the busy market."},
+    {n:3,d:"A",r:0,c:22,a:"PUSH",syl:["PUSH"],clue:"Exert force on someone or something, typically with one's hand, in order to move them away from oneself.",syn:"press, shove",ex:"The car stopped, so we had to get out and ___ it."},
+    {n:5,d:"A",r:2,c:19,a:"PUBLICITY",syl:["PUB","LI","CI","TY"],clue:"The notice or attention given to someone or something by the media.",syn:"attention, promotion",ex:"The new film got a lot of ___ before it came out."},
+    {n:6,d:"A",r:4,c:8,a:"QUICKLY",syl:["QUICK","LY"],clue:"At a fast speed.",syn:"fast, rapidly",ex:"She finished her homework ___ so she could go out and play."},
+    {n:7,d:"A",r:4,c:16,a:"QUEEN",syl:["QUEEN"],clue:"The female ruler of an independent state, especially one who inherits the position by right of birth.",syn:"female monarch, king's wife",ex:"The ___ lived in a huge palace with her family."},
+    {n:9,d:"A",r:6,c:1,a:"QUEUE",syl:["QUEUE"],clue:"A line or sequence of people or vehicles awaiting their turn to be attended to or to proceed.",syn:"line, row of people",ex:"The fans had to wait in a long ___ to buy tickets."},
+    {n:10,d:"A",r:6,c:16,a:"PUBLISH",syl:["PUB","LISH"],clue:"Prepare and issue a book, journal, piece of music, or other work for public sale.",syn:"print, release",ex:"The company is going to ___ her first novel next year."},
+    {n:11,d:"A",r:7,c:7,a:"PROPOSAL",syl:["PRO","PO","SAL"],clue:"A plan or suggestion, especially a formal or written one, put forward for consideration or discussion by others.",syn:"plan, suggestion",ex:"The students wrote a ___ for a longer lunch break."},
+    {n:13,d:"A",r:9,c:2,a:"PROVIDE",syl:["PRO","VIDE"],clue:"Make available for use; supply.",syn:"give, supply",ex:"The hotel will ___ towels and soap for every guest."},
+    {n:14,d:"A",r:10,c:12,a:"QUALITY",syl:["QUAL","I","TY"],clue:"The standard of something as measured against other things of a similar kind.",syn:"standard, level",ex:"These shoes are expensive, but the ___ is excellent."},
+    {n:15,d:"A",r:11,c:0,a:"PROVE",syl:["PROVE"],clue:"Demonstrate the truth or existence of something by evidence or argument.",syn:"show, demonstrate",ex:"Can you ___ that you were at home last night?"},
+    {n:16,d:"A",r:12,c:7,a:"PURCHASE",syl:["PUR","CHASE"],clue:"Acquire something by paying for it; buy.",syn:"buy, pay for",ex:"You can ___ tickets online or at the station."},
+    {n:17,d:"A",r:14,c:6,a:"QUALIFICATION",syl:["QUAL","I","FI","CA","TION"],clue:"A quality or accomplishment that makes someone suitable for a particular job or activity.",syn:"certificate, diploma",ex:"You need a teaching ___ to work at this school."},
+    {n:18,d:"A",r:16,c:8,a:"PUNISHMENT",syl:["PUN","ISH","MENT"],clue:"The infliction or imposition of a penalty as retribution for an offense.",syn:"penalty",ex:"As a ___ for being late, he had to clean the classroom."},
+    {n:1,d:"D",r:0,c:10,a:"PUBLIC",syl:["PUB","LIC"],clue:"Of or concerning the people as a whole.",syn:"open to everyone, common",ex:"The new library is open to the ___ every day."},
+    {n:2,d:"D",r:0,c:13,a:"PURELY",syl:["PURE","LY"],clue:"Entirely; exclusively.",syn:"only, simply",ex:"We met ___ by chance at the bus station."},
+    {n:3,d:"D",r:0,c:22,a:"PULL",syl:["PULL"],clue:"Exert force on someone or something so as to cause movement toward oneself.",syn:"drag, tug",ex:"Hold the rope and ___ it as hard as you can!"},
+    {n:4,d:"D",r:1,c:20,a:"QUANTITY",syl:["QUAN","TI","TY"],clue:"The amount or number of a material or immaterial thing not usually estimated by spatial measurement.",syn:"amount, number",ex:"The recipe only needs a small ___ of sugar."},
+    {n:6,d:"D",r:4,c:8,a:"QUARREL",syl:["QUAR","REL"],clue:"An angry argument or disagreement, typically between people who are usually on good terms.",syn:"argument, fight",ex:"The two brothers had a ___ about who should wash the dishes."},
+    {n:8,d:"D",r:5,c:4,a:"PURPOSE",syl:["PUR","POSE"],clue:"The reason for which something is done or created or for which something exists.",syn:"aim, reason",ex:"What is the ___ of your visit to London?"},
+    {n:10,d:"D",r:6,c:16,a:"PUBLICATION",syl:["PUB","LI","CA","TION"],clue:"The action of making something generally known.",syn:"announcement, release",ex:"The ___ of the exam results will be next Monday."},
+    {n:12,d:"D",r:7,c:10,a:"PROTECTION",syl:["PRO","TEC","TION"],clue:"The action of protecting someone or something, or the state of being protected.",syn:"safety, defence",ex:"Wear a hat for ___ from the sun."},
+    {n:13,d:"D",r:9,c:2,a:"PROUDLY",syl:["PROUD","LY"],clue:"With feelings of deep pleasure or satisfaction in one's own achievements.",syn:"with pride",ex:"She ___ showed her parents her certificate."}
   ]
 };
-/* Từ nhiễu cho trò "Chọn 1 trong 4" */
+/* Decoy words for "Pick 1 of 4" */
 const DECOYS = ["PRIZE","PROUD","PRINT","PRICE","QUIET","QUITE","QUOTE","QUICK","PURSE","PUPIL","PUZZLE","PROMISE","PRODUCE","PROGRAM","PROBLEM","PRIVATE","PRESENT","PREPARE","PRESSURE","PRACTICE","QUESTION","PRINCESS","POSITION","POLLUTION","PRODUCTION","PROMOTION","PREDICTION","PREPARATION","PRESENTATION","PUNCTUATION","PUBLISHER","POPULARITY","PERSONALITY","QUANTIFICATION","PURIFICATION","PUNCTUAL","PURPLE","PULSE","PUNCH","PUNISH","QUARTER","QUALIFY","QUANTUM","PROPERLY","PROBABLY","PRIMARY","PROJECT","PROTEST","PROVINCE","PUBLICLY","QUEUES","QUEST","QUAKE"];
 
-/* ============ TRẠNG THÁI ============ */
+/* ============ STATE ============ */
 const W = PUZZLE.words.map((w,i)=>({...w,id:i,key:w.n+w.d}));
 const KEY = "crossword-"+PUZZLE.id;
 let state = {solved:{},peek:{},hints:{}};
@@ -281,22 +281,22 @@ const solution = {};               // "r,c" -> letter
 const startNum = {};               // "r,c" -> number
 W.forEach(w=>{cellsOf(w).forEach(p=>solution[p.r+","+p.c]=p.ch); startNum[w.r+","+w.c]=w.n;});
 
-let cur = null;                    // từ đang chọn
+let cur = null;                    // selected word
 let lastGame = null;
 
 const $ = id => document.getElementById(id);
 const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const esc = s => s.replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
-const dirName = d => d==="A"?"Hàng ngang":"Hàng dọc";
+const dirName = d => d==="A"?"Across":"Down";
 
-/* ============ CHỌN SỐ ============ */
+/* ============ NUMBER PICKER ============ */
 function renderPicker(){
   ["A","D"].forEach(d=>{
     $("nums"+d).innerHTML = W.filter(w=>w.d===d).map(w=>
-      `<button class="num ${state.solved[w.key]?"done":""}" data-id="${w.id}" aria-label="${w.n} ${dirName(w.d)}">${w.n}<span>${state.solved[w.key]?"đã giải":w.a.length+" chữ"}</span></button>`).join("");
+      `<button class="num ${state.solved[w.key]?"done":""}" data-id="${w.id}" aria-label="${w.n} ${dirName(w.d)}">${w.n}<span>${state.solved[w.key]?"solved":w.a.length+" letters"}</span></button>`).join("");
   });
   const k=Object.keys(state.solved).length;
-  $("progText").textContent = k+" / "+W.length+" từ";
+  $("progText").textContent = k+" / "+W.length+" words";
   $("progBar").style.width = (k/W.length*100)+"%";
   $("doneAll").classList.toggle("show",k===W.length);
 }
@@ -304,9 +304,9 @@ document.addEventListener("click",e=>{
   const b=e.target.closest(".num"); if(b) openWord(W[+b.dataset.id]);
 });
 
-/* ============ LƯỚI ============ */
+/* ============ GRID ============ */
 function knownLetter(k){
-  // chữ đã biết tại ô: từ đã giải đi qua ô này
+  // letter known at this square from a solved word
   for(const w of W){ if(!state.solved[w.key]) continue;
     for(const p of cellsOf(w)) if(p.r+","+p.c===k) return p.ch; }
   return null;
@@ -341,17 +341,17 @@ function fitCells(){
 }
 addEventListener("resize",()=>{ if(cur) fitCells(); });
 
-/* ============ MỞ TỪ ============ */
+/* ============ OPEN A WORD ============ */
 function openWord(w){
   cur=w;
   $("pickerView").hidden=true; $("playView").hidden=false;
-  $("cNum").textContent=w.n; $("cDir").textContent=dirName(w.d)+" ("+(w.d==="A"?"Across":"Down")+")";
-  $("cLen").textContent=w.a.length+" chữ cái";
+  $("cNum").textContent=w.n; $("cDir").textContent=dirName(w.d);
+  $("cLen").textContent=w.a.length+" letters";
   $("cClue").textContent=w.clue;
   const inp=$("ansInput"); inp.maxLength=w.a.length;
   const done=!!state.solved[w.key];
   inp.value=done?w.a:""; inp.disabled=done;
-  $("msg").textContent=done?"Từ này đã giải xong.":""; $("msg").className="msg"+(done?" ok":"");
+  $("msg").textContent=done?"This word is already solved.":""; $("msg").className="msg"+(done?" ok":"");
   $("hintBtn").disabled=done; $("revealBtn").disabled=done;
   renderUsed();
   renderGrid();
@@ -366,7 +366,7 @@ function scrollToWord(){
 }
 function renderUsed(){
   const u=state.hints[cur.key]||0;
-  $("usedHints").textContent=u?`Đã dùng ${u} gợi ý cho từ này.`:"";
+  $("usedHints").textContent=u?`Hints used for this word: ${u}`:"";
 }
 $("ansInput").addEventListener("input",e=>{
   e.target.value=e.target.value.replace(/[^a-z]/gi,"").toUpperCase();
@@ -375,9 +375,9 @@ $("ansInput").addEventListener("input",e=>{
 $("ansForm").addEventListener("submit",e=>{
   e.preventDefault(); if(!cur||state.solved[cur.key]) return;
   const v=$("ansInput").value.toUpperCase();
-  if(v.length<cur.a.length){ setMsg(`Cần đủ ${cur.a.length} chữ cái, mới có ${v.length}.`,"bad"); return; }
-  if(v===cur.a) markSolved(cur,"Chính xác!");
-  else setMsg("Chưa đúng. Thử lại hoặc bấm Gợi ý.","bad");
+  if(v.length<cur.a.length){ setMsg(`The word has ${cur.a.length} letters. You typed ${v.length}.`,"bad"); return; }
+  if(v===cur.a) markSolved(cur,"Correct!");
+  else setMsg("Not quite. Try again or press Hint.","bad");
 });
 function setMsg(t,kind){
   const m=$("msg"); m.textContent=t; m.className="msg "+(kind||"");
@@ -395,26 +395,26 @@ function markSolved(w,text){
   renderPicker();
 }
 $("backBtn").onclick=()=>{cur=null;$("playView").hidden=true;$("pickerView").hidden=false;renderPicker();};
-$("revealBtn").onclick=()=>{ if(cur && confirm("Hiện đáp án cho từ này?")) markSolved(cur,"Đáp án: "+cur.a); };
-$("resetAll").onclick=()=>{ if(confirm("Xoá toàn bộ tiến độ và chơi lại từ đầu?")){state={solved:{},peek:{},hints:{}};save();$("backBtn").onclick();} };
+$("revealBtn").onclick=()=>{ if(cur && confirm("Show the answer for this word?")) markSolved(cur,"Answer: "+cur.a); };
+$("resetAll").onclick=()=>{ if(confirm("Clear all progress and start again?")){state={solved:{},peek:{},hints:{}};save();$("backBtn").onclick();} };
 
-/* ============ GỢI Ý / MINI GAME ============ */
+/* ============ HINTS / MINI GAMES ============ */
 const GAMES = {
-  reveal:{title:"Lật chữ cái",how:"Một chữ cái ngẫu nhiên vừa được mở trên ô chữ (chữ màu nhạt trong các ô đỏ)."},
-  meaning:{title:"Nghĩa tiếng Việt",how:"Đây là nghĩa tiếng Việt của từ cần tìm."},
-  example:{title:"Câu ví dụ",how:"Từ cần tìm nằm ở chỗ trống trong câu này."},
-  hangman:{title:"Hangman",how:"Đoán từng chữ cái. Sai quá 6 lần là thua."},
-  anagram:{title:"Sắp xếp chữ cái",how:"Bấm các chữ cái theo đúng thứ tự để ghép thành từ. Bấm vào ô phía trên để trả chữ về."},
-  syllable:{title:"Ghép âm tiết",how:"Từ đã được tách thành âm tiết. Bấm theo đúng thứ tự để ghép lại."},
-  choice:{title:"Chọn 1 trong 4",how:"Chọn từ đúng với gợi ý."},
-  wordle:{title:"Wordle mini",how:"Đoán cả từ. Mỗi lần đoán, các chữ sẽ đổi màu."},
-  noise:{title:"Chọn chữ đúng",how:"Có vài chữ cái thừa lẫn vào. Chọn đúng chữ, đúng thứ tự để ghép thành từ."}
+  reveal:{title:"Reveal a letter",how:"One random letter is now shown in the red squares (in a lighter colour)."},
+  meaning:{title:"Similar words",how:"These words have a similar meaning to the answer."},
+  example:{title:"Example sentence",how:"The answer fits in the gap in this sentence."},
+  hangman:{title:"Hangman",how:"Guess one letter at a time. Six wrong guesses and the game is over."},
+  anagram:{title:"Reorder the letters",how:"Tap the letters in the right order to build the word. Tap a letter in the top row to send it back."},
+  syllable:{title:"Build the syllables",how:"The word is split into syllables. Tap them in the right order to build it."},
+  choice:{title:"Pick 1 of 4",how:"Choose the word that matches the clue."},
+  wordle:{title:"Wordle mini",how:"Guess the whole word. After each guess, the squares change colour."},
+  noise:{title:"Find the right letters",how:"Some extra letters are mixed in. Choose the correct letters in the correct order."}
 };
 function availableGames(w){
   const peek=state.peek[w.key]||[];
   return Object.keys(GAMES).filter(g=>{
     if(g==="syllable") return w.syl.length>1;
-    if(g==="reveal") return peek.length < w.a.length-1;   // luôn chừa ít nhất 1 chữ
+    if(g==="reveal") return peek.length < w.a.length-1;   // always keep at least one letter hidden
     return true;
   });
 }
@@ -428,7 +428,7 @@ function openHint(exclude){
   state.hints[cur.key]=(state.hints[cur.key]||0)+1; save(); renderUsed();
   $("mTitle").textContent=GAMES[g].title;
   $("mHow").textContent=GAMES[g].how;
-  $("mClue").innerHTML=`<b>${cur.n} ${dirName(cur.d)}</b> (${cur.a.length} chữ): ${esc(cur.clue)}`;
+  $("mClue").innerHTML=`<b>${cur.n} ${dirName(cur.d)}</b> (${cur.a.length} letters): ${esc(cur.clue)}`;
   $("mBody").innerHTML="";
   RUN[g](cur,$("mBody"));
   $("veil").classList.add("open");
@@ -443,13 +443,13 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("veil").classList
 
 function gameWon(box,w){
   const d=document.createElement("div"); d.className="win";
-  d.innerHTML=`Chính xác! Từ đã được điền vào ô chữ.<b>${w.a}</b>`;
+  d.innerHTML=`Correct! The word is now in the crossword.<b>${w.a}</b>`;
   box.appendChild(d);
-  markSolved(w,"Đã giải bằng mini game!");
+  markSolved(w,"Solved with a hint game!");
   $("mOther").hidden=true;
 }
 
-/* bộ ghép thẻ dùng chung: anagram, ghép âm tiết, chọn chữ có nhiễu */
+/* shared tile builder: anagram, syllables, letters with decoys */
 function tileGame(box,w,pieces,targetCount){
   box.innerHTML=`<div class="slots" data-s></div><div class="tiles" data-t></div><div class="status" data-st></div>`;
   const slotsEl=box.querySelector("[data-s]"), tilesEl=box.querySelector("[data-t]"), st=box.querySelector("[data-st]");
@@ -476,7 +476,7 @@ function tileGame(box,w,pieces,targetCount){
     if(picked.length===targetCount){
       const word=picked.map(p=>p.t).join("");
       if(word===w.a){ over=true; gameWon(box,w); }
-      else { st.textContent="Chưa đúng thứ tự. Bấm vào chữ phía trên để sửa."; st.className="status bad"; }
+      else { st.textContent="Wrong order. Tap a letter in the top row to fix it."; st.className="status bad"; }
     }
   });
   draw();
@@ -491,17 +491,17 @@ const RUN = {
     const notTyped=cand.filter(i=>typed[i]!==w.a[i]); if(notTyped.length) cand=notTyped;
     const i=cand[Math.floor(Math.random()*cand.length)];
     peek.push(i); save();
-    // xoá chữ đã gõ sai ở vị trí này để chữ gợi ý hiện ra
+    // clear a wrong typed letter here so the hint letter shows
     if(typed[i] && typed[i]!==w.a[i]){ $("ansInput").value=typed.slice(0,i); }
     renderGrid();
     const shown=[...w.a].map((ch,k)=>peek.includes(k)?ch:"_").join(" ");
-    box.innerHTML=`<p class="big">Chữ thứ <b>${i+1}</b> là <b>${w.a[i]}</b>.</p><div class="slots">${[...w.a].map((ch,k)=>`<div class="slot ${peek.includes(k)?"":"empty"}">${peek.includes(k)?ch:""}</div>`).join("")}</div><p class="how" style="text-align:center">Đã mở ${peek.length} / ${w.a.length} chữ. Bấm "Đổi trò khác" hoặc Gợi ý lần nữa để có thêm.</p>`;
+    box.innerHTML=`<p class="big">Letter <b>${i+1}</b> is <b>${w.a[i]}</b>.</p><div class="slots">${[...w.a].map((ch,k)=>`<div class="slot ${peek.includes(k)?"":"empty"}">${peek.includes(k)?ch:""}</div>`).join("")}</div><p class="how" style="text-align:center">${peek.length} of ${w.a.length} letters shown. Press Hint again for more help.</p>`;
   },
   meaning(w,box){
-    box.innerHTML=`<p class="big">Nghĩa tiếng Việt: <b>${esc(w.vi)}</b></p><p class="how">Từ bắt đầu bằng chữ <b>${w.a[0]}</b> và có ${w.a.length} chữ cái.</p>`;
+    box.innerHTML=`<p class="big">Similar words: <b>${esc(w.syn)}</b></p><p class="how">The answer starts with <b>${w.a[0]}</b> and has ${w.a.length} letters.</p>`;
   },
   example(w,box){
-    box.innerHTML=`<p class="big">${esc(w.ex).replace("___",'<span class="blank"></span>')}</p><p class="how">Điền từ còn thiếu (${w.a.length} chữ cái).</p>`;
+    box.innerHTML=`<p class="big">${esc(w.ex).replace("___",'<span class="blank"></span>')}</p><p class="how">Fill in the missing word (${w.a.length} letters).</p>`;
   },
   hangman(w,box){
     const MAX=6; let wrong=0, guessed=new Set(), over=false;
@@ -518,13 +518,13 @@ const RUN = {
       const btn=K.querySelector(`[data-ch="${ch}"]`); btn.disabled=true;
       if(w.a.includes(ch)) btn.classList.add("hit"); else {btn.classList.add("no"); wrong++;}
       if([...w.a].every(c=>guessed.has(c))){ over=true; draw(); gameWon(box,w); return; }
-      if(wrong>=MAX){ over=true; draw(true); st.className="status bad"; st.textContent=`Hết lượt! Từ đúng là ${w.a}. Thử viết lại vào ô đáp án nhé.`; return; }
-      st.textContent=`Còn ${MAX-wrong} lượt sai.`; st.className="status";
+      if(wrong>=MAX){ over=true; draw(true); st.className="status bad"; st.textContent=`Out of guesses! The word was ${w.a}. Now type it into the answer box.`; return; }
+      st.textContent=`Wrong guesses left: ${MAX-wrong}`; st.className="status";
       draw();
     }
     K.addEventListener("click",e=>{const b=e.target.closest("[data-ch]"); if(b) guess(b.dataset.ch);});
     hangKeys=e=>{ if(/^[a-z]$/i.test(e.key)&&$("veil").classList.contains("open")) guess(e.key.toUpperCase()); };
-    draw(); st.textContent=`Còn ${MAX} lượt sai.`;
+    draw(); st.textContent=`Wrong guesses left: ${MAX}`;
     document.addEventListener("keydown",wordleKeys);
     curKeyHandler=hangKeys;
   },
@@ -546,14 +546,14 @@ const RUN = {
     box.querySelector(".choices").addEventListener("click",e=>{
       const b=e.target.closest("[data-o]"); if(!b||over||b.disabled) return;
       if(b.dataset.o===w.a){ over=true; b.classList.add("right"); st.textContent=""; gameWon(box,w); }
-      else { b.classList.add("wrong"); b.disabled=true; st.className="status bad"; st.textContent="Chưa đúng, chọn lại nhé."; }
+      else { b.classList.add("wrong"); b.disabled=true; st.className="status bad"; st.textContent="Not this one. Try again."; }
     });
   },
   wordle(w,box){
     const MAX=6, N=w.a.length; let rows=[], cur="", over=false;
     const avail=(box.clientWidth||Math.min(596,innerWidth-80));
     const size=Math.max(16,Math.min(42,Math.floor((avail-(N-1)*4)/N)));
-    box.innerHTML=`<div class="legend"><b style="background:var(--ok)">xanh</b> đúng vị trí &nbsp; <b style="background:var(--warn)">vàng</b> có trong từ, sai vị trí &nbsp; <b style="background:var(--hint)">xám</b> không có</div><div class="wgrid" data-g style="--wc:${size}px"></div><div class="keys" data-k></div><div class="status" data-st></div>`;
+    box.innerHTML=`<div class="legend"><b style="background:var(--ok)">green</b> right place &nbsp; <b style="background:var(--warn)">yellow</b> in the word, wrong place &nbsp; <b style="background:var(--hint)">grey</b> not in the word</div><div class="wgrid" data-g style="--wc:${size}px"></div><div class="keys" data-k></div><div class="status" data-st></div>`;
     const G=box.querySelector("[data-g]"),K=box.querySelector("[data-k]"),st=box.querySelector("[data-st]");
     const keyState={};
     function score(g){
@@ -576,19 +576,19 @@ const RUN = {
       G.innerHTML=h;
       const cls={g:"hit",y:"part",x:"no"};
       K.innerHTML=[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(ch=>`<button class="key ${keyState[ch]?cls[keyState[ch]]:""}" data-ch="${ch}">${ch}</button>`).join("")+
-        `<button class="key wide" data-act="del">Xoá</button><button class="key wide" data-act="enter">Đoán</button>`;
+        `<button class="key wide" data-act="del">Delete</button><button class="key wide" data-act="enter">Enter</button>`;
     }
     function press(k){
       if(over) return;
       if(k==="del"){ cur=cur.slice(0,-1); }
       else if(k==="enter"){
-        if(cur.length<N){ st.className="status bad"; st.textContent=`Cần đủ ${N} chữ cái.`; return; }
+        if(cur.length<N){ st.className="status bad"; st.textContent=`The word needs ${N} letters.`; return; }
         const s=score(cur); rows.push({g:cur,s});
         [...cur].forEach((ch,i)=>{ const rank={g:3,y:2,x:1}; if(!keyState[ch]||rank[s[i]]>rank[keyState[ch]]) keyState[ch]=s[i]; });
         if(cur===w.a){ over=true; cur=""; draw(); st.textContent=""; gameWon(box,w); return; }
         cur="";
-        if(rows.length>=MAX){ over=true; draw(); st.className="status bad"; st.textContent=`Hết lượt! Từ đúng là ${w.a}.`; return; }
-        st.className="status"; st.textContent=`Còn ${MAX-rows.length} lượt đoán.`;
+        if(rows.length>=MAX){ over=true; draw(); st.className="status bad"; st.textContent=`Out of guesses! The word was ${w.a}.`; return; }
+        st.className="status"; st.textContent=`Guesses left: ${MAX-rows.length}`;
       }
       else if(cur.length<N){ cur+=k; }
       st.textContent= st.className.includes("bad")? "" : st.textContent; st.className="status";
@@ -602,10 +602,10 @@ const RUN = {
       else if(e.key==="Enter"){ e.preventDefault(); press("enter"); }
     };
     document.addEventListener("keydown",wordleKeys);
-    draw(); st.textContent=`Bạn có ${MAX} lượt đoán.`;
+    draw(); st.textContent=`You have ${MAX} guesses.`;
   }
 };
-/* bàn phím vật lý cho Hangman / Wordle */
+/* physical keyboard for Hangman / Wordle */
 let curKeyHandler=null, hangKeys=null;
 function wordleKeys(e){ if(curKeyHandler) curKeyHandler(e); }
 const _close=closeHint;
